@@ -1,4 +1,4 @@
-name: build_publish
+name: build_and_test_and_publish
 on:
   workflow_dispatch:
   pull_request:
