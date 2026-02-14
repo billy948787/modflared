@@ -31,7 +31,7 @@ jobs:
           file_path: "build/libs/modflared-${{ steps.build.outputs.version }}.jar"
           game_endpoint: "minecraft"
           relations: "fabric-api:requiredDependency"
-          game_versions: "Minecraft 1.7.10:1.7.10,Java 21,Forge"
+          game_versions: "Minecraft 1.7:1.7,Java 21,Forge"
           project_id: "1461983"
           token: "${{ secrets.CURSEFORGE_UPLOAD_TOKEN }}"
       
