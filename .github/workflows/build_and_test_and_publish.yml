@@ -1,0 +1,37 @@
+name: build_publish
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    paths:
+      - src/**
+      - build.gradle
+      - gradle.properties
+jobs:
+  build-and-test:
+    uses: GTNewHorizons/GTNH-Actions-Workflows/.github/workflows/build-and-test.yml@master
+    secrets: inherit
+  build_publish:
+    runs-on: ubuntu-latest
+    steps:
+      - { uses: actions/checkout@v2, with: { fetch-depth: 0 } }
+      - {
+          name: "Set up JDK 21",
+          uses: actions/setup-java@v2,
+          with: { distribution: "adopt", java-version: "21" },
+        }
+      - {
+          name: "Build with Gradle",
+          id: build,
+          run: "chmod +x gradlew && ./gradlew build",
+        }
+      - name: "Upload to CurseForge"
+        uses: itsmeow/curseforge-upload@v3
+        with:
+          file_path: "build/libs/modflared-${{ steps.build.outputs.version }}.jar"
+          game_endpoint: "minecraft"
+          relations: "fabric-api:requiredDependency"
+          game_versions: "Minecraft 1.7.10:1.7.10,Java 21,Forge"
+          project_id: "0"
+          token: "${{ secrets.CURSEFORGE_UPLOAD_TOKEN }}"
+      
