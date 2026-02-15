@@ -1,12 +1,7 @@
 name: build_and_test_and_publish
 on:
-  workflow_dispatch:
-  pull_request:
   push:
-    paths:
-      - src/**
-      - build.gradle
-      - gradle.properties
+    tags: [ '*' ]
 jobs:
   build-and-test:
     uses: GTNewHorizons/GTNH-Actions-Workflows/.github/workflows/build-and-test.yml@master
@@ -14,6 +9,12 @@ jobs:
   build_publish:
     needs: build-and-test
     runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ github.ref_name }}
+      RELEASE_VERSION: ${{ github.ref_name }}
+      SNAPSHOT: ${{ endsWith(github.ref_name, '-snapshot') || contains(github.event.head_commit.message, '[snapshot]') }}
+      PRERELEASE: ${{ endsWith(github.ref_name, '-pre') }}
+      MAVEN_PUBLISHING_URL: ${{ vars.MAVEN_PUBLISHING_URL || 'https://nexus.gtnewhorizons.com/repository/releases/' }}
     steps:
       - name: checkout repository
         uses: actions/checkout@v6
@@ -26,12 +27,14 @@ jobs:
       - name: "Upload to CurseForge"
         shell: bash
         run: |
-          echo "Generating changelog from the latest commit..."
-          export CHANGELOG_FILE=$(mktemp)
-          git log -1 --pretty=format:"- %s (%h) - %an" > "$CHANGELOG_FILE"
-
+          echo "Generating changelog notes..."
+          export "CHANGELOG_FILE=$(mktemp --suffix=.md)"
           echo "CHANGELOG_FILE=${CHANGELOG_FILE}" >> $GITHUB_ENV
+          gh api --method POST -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
+            -f tag_name="${RELEASE_VERSION}" \
+            --jq ".body" > "${CHANGELOG_FILE}"
           
-          chmod +x ./gradlew && ./gradlew --build-cache --info --stacktrace assemble publish -x test
+          chmod +x ./gradlew && ./gradlew --build-cache --info --stacktrace -PmavenPublishUrl='${{ env.MAVEN_PUBLISHING_URL }}' assemble publish -x test
         env:
           CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_UPLOAD_TOKEN }}
