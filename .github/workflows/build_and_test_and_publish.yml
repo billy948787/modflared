@@ -26,14 +26,12 @@ jobs:
       - name: "Upload to CurseForge"
         shell: bash
         run: |
-          chmod +x ./gradlew && ./gradlew build && ./gradlew publish
-          
-          cat <<EOF > changelog.txt
-          ${{ github.event.head_commit.message }}
-          EOF
+          echo "Generating changelog from the latest commit..."
+          export CHANGELOG_FILE=$(mktemp)
+          git log -1 --pretty=format:"- %s (%h) - %an" > "$CHANGELOG_FILE"
 
-          export CHANGELOG_FILE="$(pwd)/changelog.txt"
+          echo "CHANGELOG_FILE=${CHANGELOG_FILE}" >> $GITHUB_ENV
           
-          echo "Changelog file created at: $CHANGELOG_FILE"
+          chmod +x ./gradlew && ./gradlew build && ./gradlew publish
         env:
           CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_UPLOAD_TOKEN }}
