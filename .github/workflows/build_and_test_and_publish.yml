@@ -32,6 +32,6 @@ jobs:
 
           echo "CHANGELOG_FILE=${CHANGELOG_FILE}" >> $GITHUB_ENV
           
-          chmod +x ./gradlew && ./gradlew --build-cache --info --stacktrace build publish -x apiJar
+          chmod +x ./gradlew && ./gradlew --build-cache --info --stacktrace build publish -x sourcesJar
         env:
           CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_UPLOAD_TOKEN }}
