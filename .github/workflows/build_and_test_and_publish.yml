@@ -12,6 +12,7 @@ jobs:
     uses: GTNewHorizons/GTNH-Actions-Workflows/.github/workflows/build-and-test.yml@master
     secrets: inherit
   build_publish:
+    needs: build-and-test
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
