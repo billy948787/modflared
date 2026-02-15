@@ -29,3 +29,4 @@ jobs:
           chmod +x ./gradlew && ./gradlew build && ./gradlew publish
         env:
           CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_UPLOAD_TOKEN }}
+          CHANGELOG: ${{ github.event.head_commit.message }}
