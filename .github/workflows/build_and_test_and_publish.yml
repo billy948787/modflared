@@ -52,6 +52,7 @@ jobs:
           ./gradlew --build-cache --info --stacktrace build
       - name: generate changelog
         shell: bash
+        id: changelog
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ github.ref_name }}
@@ -64,6 +65,7 @@ jobs:
               "/repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
               -f tag_name="${RELEASE_VERSION}" \
               --jq ".body" > "${CHANGELOG_FILE}"
+            echo "path=${TEMP_FILE}" >> $GITHUB_OUTPUT
       - name: publish
         uses: Kir-Antipov/mc-publish@v3.3
         with:
@@ -76,7 +78,7 @@ jobs:
           version: ${{ github.ref_name }}
           files: |
             build/libs/!(*-@(dev|sources|javadoc)).jar
-          changelog-file: ${CHANGELOG_FILE}
+          changelog-file: ${{ steps.changelog.outputs.path }}
 
           github-tag: ${{ github.ref_name }}
           github-generate-changelog: true
