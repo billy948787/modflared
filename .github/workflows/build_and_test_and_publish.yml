@@ -22,6 +22,8 @@ jobs:
 
           name: "Release ${{ github.ref_name }}"
           version: ${{ github.ref_name }}
+          files: |
+            build/libs/!(*-@(dev|sources|javadoc)).jar
 
           github-tag: ${{ github.ref_name }}
           github-generate-changelog: true
