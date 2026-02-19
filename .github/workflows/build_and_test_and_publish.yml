@@ -84,8 +84,6 @@ jobs:
           github-generate-changelog: true
           github-draft: false
           github-prerelease: false
-          github-commitish: dev
-          github-discussion: Announcements
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
           loaders: forge
