@@ -13,7 +13,45 @@ jobs:
     needs: build-and-test
     runs-on: ubuntu-24.04
     steps:
-      - uses: Kir-Antipov/mc-publish@v3.3
+      - name: Checkout mod repo
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 32
+          submodules: recursive
+      - name: Determine JDK versions
+        id: list-jdk-versions
+        shell: bash
+        run: |
+          (
+            echo 'java-versions<<EOF'
+            echo 8
+            echo 17
+            echo 21
+            if [[ -f gradle/gradle-daemon-jvm.properties ]]; then
+              yq -pprops -oprops '.toolchainVersion' gradle/gradle-daemon-jvm.properties
+            fi
+            echo EOF
+          ) | tee -a "${GITHUB_OUTPUT}"
+
+      - name: Set up JDK versions
+        uses: actions/setup-java@v5
+        with:
+          java-version: ${{ steps.list-jdk-versions.outputs.java-versions }}
+          distribution: 'zulu'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          build-scan-publish: true
+          build-scan-terms-of-use-url: "https://gradle.com/terms-of-service"
+          build-scan-terms-of-use-agree: "yes"
+          validate-wrappers: true
+      - name: build
+        shell: bash 
+        run: |
+          chmod +x gradlew
+          ./gradlew --build-cache --info --stacktrace build
+      - name: publish
+        uses: Kir-Antipov/mc-publish@v3.3
         with:
           modrinth-id: Rf3eVYac
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
@@ -36,7 +74,7 @@ jobs:
           loaders: forge
           game-versions: 1.7.10
           version-type: release
-          java: 25
+          java: 8
 
           curseforge-id: 1461983
           curseforge-token: ${{ secrets.CURSEFORGE_UPLOAD_TOKEN }}
