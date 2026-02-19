@@ -52,6 +52,8 @@ jobs:
           ./gradlew --build-cache --info --stacktrace build
       - name: generate changelog
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           echo "Generating changelog notes..."
             export "CHANGELOG_FILE=$(mktemp --suffix=.md)"
