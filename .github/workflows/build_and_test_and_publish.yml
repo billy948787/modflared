@@ -50,18 +50,29 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew --build-cache --info --stacktrace build
+      - name: generate changelog
+        shell: bash
+        run: |
+          echo "Generating changelog notes..."
+            export "CHANGELOG_FILE=$(mktemp --suffix=.md)"
+            echo "CHANGELOG_FILE=${CHANGELOG_FILE}" >> $GITHUB_ENV
+            gh api --method POST -H "Accept: application/vnd.github+json" \
+              "/repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
+              -f tag_name="${RELEASE_VERSION}" \
+              --jq ".body" > "${CHANGELOG_FILE}"
       - name: publish
         uses: Kir-Antipov/mc-publish@v3.3
         with:
-          modrinth-id: Rf3eVYac
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          modrinth-dependencies: |
-            ghjoiQAl(required)
+          # modrinth-id: Rf3eVYac
+          # modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          # modrinth-dependencies: |
+          #   ghjoiQAl(required)
 
           name: "Release ${{ github.ref_name }}"
           version: ${{ github.ref_name }}
           files: |
             build/libs/!(*-@(dev|sources|javadoc)).jar
+          changelog-file: ${CHANGELOG_FILE}
 
           github-tag: ${{ github.ref_name }}
           github-generate-changelog: true
@@ -74,7 +85,6 @@ jobs:
           loaders: forge
           game-versions: 1.7.10
           version-type: release
-          java: 8
 
           curseforge-id: 1461983
           curseforge-token: ${{ secrets.CURSEFORGE_UPLOAD_TOKEN }}
